@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chit-Samskara Gurukul Archive</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    body { background-color: #FAF6EE; color: #2C1A11; line-height: 1.5; padding-bottom: 40px; }
+    
+    .saffron-header { background: linear-gradient(135deg, #FF9933, #E67E22); color: #FFFFFF; padding: 16px 24px; border-b: 3px solid #D35400; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
+    .saffron-header h1 { font-size: 24px; font-weight: 700; tracking-wide: 1px; margin-bottom: 2px; }
+    .saffron-header p { font-size: 12px; opacity: 0.95; font-style: italic; }
+    
+    .layout-container { max-width: 1200px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 1024px) { .layout-container { grid-template-columns: 3fr 1fr; } }
+    
+    .control-panel { background: #FFFFFF; border: 1px solid #E6DBC4; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 14px; margin-bottom: 12px; }
+    .tab-bar { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+    .tab-btn { background: #F2EFE9; color: #5C4A3C; border: none; padding: 8px 14px; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+    .tab-btn:hover { background: #E6DFD3; }
+    .tab-btn.active { background: #E67E22; color: #FFFFFF; }
+    
+    .search-wrapper { position: relative; width: 100%; max-width: 500px; margin: 0 auto; }
+    .search-input { width: 100%; padding: 10px 36px 10px 14px; border: 1px solid #D1C7BD; border-radius: 8px; font-size: 13px; outline: none; background-color: #FCFBF9; }
+    .search-input:focus { border-color: #E67E22; box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.15); }
+    .search-icon { position: absolute; right: 12px; top: 11px; font-size: 14px; color: #8C7E74; }
+    
+    .node-feed { display: flex; flex-direction: column; gap: 18px; }
+    .node-card { background: #FFFFFF; border: 1px solid #E6DBC4; border-left: 5px solid #FF9933; border-radius: 10px; padding: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); transition: transform 0.2s; }
+    .node-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(230,126,34,0.08); }
+    .node-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 11px; font-weight: 600; }
+    .node-cat { background: #FFF3E0; color: #E65100; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+    .node-time { color: #8C7E74; background: #F5F2EB; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    .node-title { font-size: 18px; font-weight: 700; color: #1F1107; margin-bottom: 8px; }
+    .node-summary { font-size: 13px; color: #5C4A3C; font-style: italic; background: #FAF8F5; border-left: 2px solid #D1C7BD; padding: 8px 12px; margin-bottom: 14px; }
+    .node-detail { font-size: 13px; color: #2C1A11; margin-bottom: 14px; }
+    .node-detail p { margin-bottom: 6px; }
+    .node-practice { background: #E8F5E9; border: 1px solid #C8E6C9; color: #1B5E20; padding: 12px; border-radius: 8px; font-size: 12.5px; margin-bottom: 12px; }
+    .node-practice strong { color: #2E7D32; display: block; margin-bottom: 3px; }
+    .tag-pool { display: flex; flex-wrap: wrap; gap: 5px; border-top: 1px solid #F5F2EB; padding-top: 10px; }
+    .tag-chip { background: #F5F2EB; border: 1px solid #E6DBC4; color: #5C4A3C; font-size: 10.5px; font-family: monospace; padding: 2px 6px; border-radius: 4px; cursor: pointer; }
+    .tag-chip:hover { background: #FFE0B2; color: #E65100; border-color: #FFB74D; }
+
+    .sidebar-panel { background: #FFFFFF; border: 1px solid #E6DBC4; border-radius: 12px; padding: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: fit-content; }
+    .sidebar-title { font-size: 15px; font-weight: 700; color: #D35400; border-bottom: 1px solid #E6DBC4; padding-bottom: 8px; margin-bottom: 14px; }
+    .routine-item { background: #FCFBF9; border-left: 3px solid #D1C7BD; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 11.5px; }
+    .routine-item.special { border-left-color: #FF9933; background: #FFFDF7; }
+    .routine-name { font-weight: 700; color: #1F1107; margin-bottom: 2px; }
+    .routine-desc { color: #6E5D52; }
+    
+    .shloka-kannada { font-size: 15px; color: #1A237E; font-weight: bold; margin-bottom: 4px; }
+    .shloka-english { font-size: 12px; color: #455A64; font-style: italic; margin-bottom: 10px; display: block; }
+    .meaning-block { margin-top: 6px; font-size: 12.5px; color: #37474F; background: #ECEFF1; padding: 10px; border-radius: 6px; }
+    .weekday-box { margin-bottom: 12px; padding: 10px; border-radius: 6px; border: 1px dashed #D1C7BD; }
+  </style>
+
+  <script>
+    let activeTab = "All";
+
+    function renderDisplayGrid(dataSet) {
+      const displayGrid = document.getElementById("archiveDisplayGrid");
+      if (!displayGrid) return;
+      displayGrid.innerHTML = "";
+
+      if(!dataSet || dataSet.length === 0) {
+        displayGrid.innerHTML = `
+          <div style="background:#FFF; padding:30px; text-align:center; font-size:13px; border:1px solid #E6DBC4; border-radius:8px; color:#8C7E74; font-style:italic;">
+            No knowledge modules matched your inputs.
+          </div>`;
+        return;
+      }
+
+      dataSet.forEach(node => {
+        const generatedTags = node.tags.map(t => 
+          `<span onclick="tagTrigger('${t}')" class="tag-chip">#${t}</span>`
+        ).join(" ");
+
+        const nodeBlock = document.createElement("div");
+        nodeBlock.className = "node-card";
+        
+        nodeBlock.innerHTML = `
+          <div class="node-meta">
+            <span class="node-cat">${node.category}</span>
+            ${node.timeline ? `<span class="node-time">${node.timeline}</span>` : ''}
+          </div>
+          <h3 class="node-title">${node.title}</h3>
+          <div class="node-summary">"${node.summary}"</div>
+          <div class="node-detail">${node.detailed}</div>
+          <div class="node-practice">
+            <strong>💡 Real-Life Integration Practice:</strong>
+            ${node.practice}
+          </div>
+          <div class="tag-pool">${generatedTags}</div>
+        `;
+        displayGrid.appendChild(nodeBlock);
+      });
+    }
+
+    function switchTab(tabKey) {
+      activeTab = tabKey;
+      
+      const buttons = document.querySelectorAll("#tabFilters button");
+      if (buttons.length > 0) {
+        buttons.forEach(btn => btn.classList.remove("active"));
+      }
+
+      const activeBtn = document.getElementById("tab-" + tabKey);
+      if (activeBtn) {
+        activeBtn.classList.add("active");
+      }
+      
+      runSearchFilter();
+    }
+
+    function runSearchFilter() {
+      const searchInput = document.getElementById("masterSearch");
+      if (!searchInput) return;
+      const textQuery = searchInput.value.toLowerCase();
+
+      if (typeof masterArchive === 'undefined') return;
+
+      const filteredResults = masterArchive.filter(node => {
+        let matchesTab = false;
+        
+        if (activeTab === "All") {
+          matchesTab = true;
+        } else if (activeTab === "Krishna") {
+          matchesTab = (node.category === "Krishna's Timeline");
+        } else if (activeTab === "Gita") {
+          matchesTab = (node.category === "Bhagavad Gita" || node.category === "Vishnu Sahasranama");
+        } else if (activeTab === "Cosmic") {
+          matchesTab = (node.category === "Numerology & Stars" || node.category === "7 Days Vedic Routine");
+        } else if (activeTab === "Bhaktas") {
+          matchesTab = (node.category === "Worshiping His Bhaktas");
+        }
+                           
+        const matchesQuery = (
+          node.title.toLowerCase().includes(textQuery) ||
+          node.summary.toLowerCase().includes(textQuery) ||
+          node.detailed.toLowerCase().includes(textQuery) ||
+          node.tags.some(t => t.toLowerCase().includes(textQuery))
+        );
+        
+        return matchesTab && matchesQuery;
+      });
+
+      renderDisplayGrid(filteredResults);
+    }
+
+    function tagTrigger(tagString) {
+      const searchInput = document.getElementById("masterSearch");
+      if (searchInput) {
+        searchInput.value = tagString;
+      }
+      switchTab("All");
+    }
+
+    window.addEventListener('load', () => {
+      if (typeof masterArchive !== 'undefined') {
+        renderDisplayGrid(masterArchive);
+      }
+    });
+  </script>
+</head>
+<body>
+
+  <!-- SLIM SAFFRON HEADER -->
+  <header class="saffron-header">
+    <h1>ಚಿತ್-ಸಂಸ್ಕಾರ • Chit-Samskara</h1>
+    <p>"Purifying Consciousness through Systematic Vedic & Puranic Application"</p>
+  </header>
+
+  <div class="layout-container">
+    
+    <!-- MAIN STREAM -->
+    <main>
+      <!-- CONTROLS CONTAINER -->
+      <div class="control-panel">
+        <div class="tab-bar" id="tabFilters">
+          <button onclick="switchTab('All')" class="tab-btn active" id="tab-All">All Wisdom</button>
+          <button onclick="switchTab('Krishna')" class="tab-btn" id="tab-Krishna">Krishna Timeline</button>
+          <button onclick="switchTab('Gita')" class="tab-btn" id="tab-Gita">Gita & Sahasranama</button>
+          <button onclick="switchTab('Cosmic')" class="tab-btn" id="tab-Cosmic">Cosmic & 7 Days</button>
+          <button onclick="switchTab('Bhaktas')" class="tab-btn" id="tab-Bhaktas">Bhaktas</button>
+        </div>
+
+        <!-- Search bar directly underneath buttons -->
+        <div class="search-wrapper">
+          <input type="text" id="masterSearch" oninput="runSearchFilter()" placeholder="Search verses, tags, or meanings..." class="search-input">
+          <span class="search-icon">🔍</span>
+        </div>
+      </div>
+
+      <!-- KNOWLEDGE GRID CONTAINER -->
+      <div id="archiveDisplayGrid" class="node-feed"></div>
+    </main>
+	    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar-panel">
+      <h2 class="sidebar-title">🔱 My Daily Nitya Karma</h2>
+      <div class="routine-item">
+        <p class="routine-name">1. Shuchi (Bath & Cleanse)</p>
+        <p class="routine-desc">Purify the material vehicle before invoking the cosmic mind.</p>
+      </div>
+      <div class="routine-item">
+        <p class="routine-name">2. Pranayama (4-5 Cycles)</p>
+        <p class="routine-desc">Equalize the breath to quiet active brain chaos.</p>
+      </div>
+      <div class="routine-item">
+        <p class="routine-name">3. Achamana</p>
+        <p class="routine-desc">Sip water 3 times: Om Keshavaya Namaha, Om Narayanaya Namaha, Om Madhavaya Namaha.</p>
+      </div>
+      <div class="routine-item special">
+        <p class="routine-name">4. Argya & Gayatri</p>
+        <p class="routine-desc">3 Daily offerings to Surya Narayana holding Gayatri vibration.</p>
+      </div>
+      <div class="routine-item special">
+        <p class="routine-name">5. Guru Graha Anusthana</p>
+        <p class="routine-desc">Execute daily sets towards the 19,000 baseline threshold.</p>
+      </div>
+      <div class="routine-item">
+        <p class="routine-name">6. Kshama</p>
+        <p class="routine-desc">Om Achyutaya Namaha, Om Anantaya Namaha, Om Govindaya Namaha.</p>
+      </div>	  
+    </aside>
+
+  </div>
+  
+   <!-- DEVOTIONAL DISCLAIMER FOOTER -->
+  <footer style="background-color: #F0EAE1; border-top: 1px solid #D9CBB7; padding: 24px 16px; margin-top: 40px; text-align: center; font-size: 11px; color: #5C4A3C; line-height: 1.6;">
+    <div style="max-w: 800px; margin: 0 auto; padding: 0 10px;">
+      <p style="font-weight: 700; color: #8C522B; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Adhyatmika Sankalpa & Legal Disclaimer</p>
+      <p style="margin-bottom: 8px;"><strong>ನಿರಾಕರಣೆ / Disclaimer:</strong> This portal, <em>Chit-Samskara</em>, is a strictly personal, non-commercial digital scriptorium compiled solely for self-study, inner purification (Chitta Shuddhi), and tracking personal daily Sadhana. The verses, translations, timelines, and astronomical or numerological calculations presented here are collected from various classical puranic text translations, historical notes, and cultural preachings for reference purposes only.</p>
+      <p style="margin-bottom: 8px;">Sanatana Dharma encompasses diverse lineages (Sampradayas), schools of thought (Dvaita, Advaita, Vishishtadvaita), and local ancestral traditions. Ritual processes, dietary associations, and mantra frequencies can vary widely across families, geographic locations, and gurus. Nothing on this website constitutes absolute theological or authoritative mandate. Devotees are encouraged to follow their family customs (Kula Achara) or consult their respective family priests or spiritual preceptors for definitive guidance.</p>
+      <p style="color: #8C7E74; font-style: italic; margin-top: 12px;">"Karmany evādhikāras te mā phaleshu kadāchana" — All compilation errors or structural modifications are surrendered with absolute humility at the feet of the Divine. Krishnarpanamastu.</p>
+    </div>
+  </footer>
+	
+  <!-- SEED DATA LOGIC BLOCK -->
+  <script>
+    const masterArchive = [
+      {
+        id: "time-001",
+        category: "Krishna's Timeline",
+        title: "1. Sri Krishna Avatara (The Descent)",
+        timeline: "3112 BCE • Shravana/Bhadrapada Krishna Ashtami",
+        summary: "The manifestation of Parabrahma in Rohini Nakshatra at midnight.",
+        detailed: "<p>Born in the underground prison of Kamsa in Mathura. He appears with four arms holding the Shankha, Chakra, Gada, and Padma to Devaki and Vasudeva, assuring them that cosmic balance is secure before transforming into a beautiful two-armed infant.</p>",
+        practice: "Meditate on the truth that God manifests in your life precisely when external conditions feel like a restricted prison.",
+        tags: ["Mathura", "Birth", "Rohini"]
+      },
+      {
+        id: "time-002",
+        category: "Krishna's Timeline",
+        title: "2. Mahaprayana (The Return to Vaikuntha)",
+        timeline: "3023 BCE • Chaitra Sukla Pratipada",
+        summary: "The conclusion of the earthly Leela at Bhalka Teertha.",
+        detailed: "<p>After the disappearance of the Yadu dynasty, Krishna sits under a Pipal tree in Prabhasa Kshetra. A hunter named Jara mistakes His lotus feet for a deer's eye and shoots an arrow. Krishna blesses Jara and ascends to His eternal spiritual abode in His self-same spiritual body, marking the official dawn of Kali Yuga.</p>",
+        practice: "Contemplate on the impermanence of the physical framework. Even the Lord wraps up His earthly play, showing us that detachment is the absolute path.",
+        tags: ["Prabhasa", "Moksha", "KaliYuga"]
+      },
+      {
+        id: "bhakti-vsn-001",
+        category: "Vishnu Sahasranama",
+        title: "Opening Shloka 1",
+        timeline: "Anushasana Parva (Mahabharata)",
+        summary: "The all-pervading cosmic root of the universe.",
+        detailed: `
+          <p class="shloka-kannada">ವಿಶ್ವಂ  ವಿಷ್ಣುರ್ವಷಟ್ಕಾರೋ  ಭೂತಭವ್ಯಭವತ್ಪ್ರಭುಃ  |  ಭೂತಕೃದ್ಭೂತಭೃದ್ಭಾವೋ  ಭೂತಾತ್ಮಾ  ಭೂತಭಾವನಃ  ||</p>
+          <span class="shloka-english">Viśvaṁ viṣṇur vaṣaṭkāro bhūta-bhavya-bhavat-prabhuḥ | bhūtakṛd bhūtabhṛd bhāvo bhūtātmā bhūtabhāvanaḥ ||</span>
+          <div class="meaning-block">
+            <strong>ಶಬ್ದಾರ್ಥ (Word Meaning):</strong><br>
+            • <b>ವಿಶ್ವಂ (Viśvaṁ):</b> He who is the universe itself.<br>
+            • <b>ವಿಷ್ಣುಃ (Viṣnuḥ):</b> He who pervades everything completely.<br>
+            • <b>ವಷಟ್ಕಾರಃ (Vaṣaṭkāro):</b> He for whom sacred sacrificial offerings are made.<br>
+            • <b>ಭೂತಭವ್ಯಭವತ್ಪ್ರಭುಃ (Bhūta-bhavya-bhavat-prabhuḥ):</b> Master of past, present, and future.<br>
+            • <b>ಭೂತಕೃತ್ (Bhūtakṛd):</b> The creator of all living beings.<br>
+            • <b>ಭೂತಭೃತ್ (Bhūtabhೃd):</b> The nourisher and sustainer of all creation.<br>
+            • <b>ಭಾವಃ (Bhāvo):</b> Absolute existence without birth or death.<br>
+            • <b>ಭೂತಾತ್ಮಾ (Bhūtātmā):</b> The internal soul of every living spark.<br>
+            • <b>ಭೂತಭಾವನಃ (Bhūtabhāvana):</b> He who causes all entities to grow and prosper.
+          </div>
+        `,
+        practice: "Chant this verse during your morning routine to realize that the environment you are working in is completely inside Vishnu.",
+        tags: ["V Sahasranama", "Shloka", "Meditation"]
+      },
+      {
+        id: "bhakti-gita-001",
+        category: "Bhagavad Gita",
+        title: "Chapter 3, Shloka 19: Karma Yoga Peak",
+        timeline: "Kurukshetra Dialogue",
+        summary: "The timeless instruction on performance of duty detached from craving.",
+        detailed: `
+          <p class="shloka-kannada">ತಸ್ಮಾದಸಕ್ತಃ  ಸತತಂ  ಕಾರ್ಯಂ  ಕರ್ಮ  ಸಮಾಚರ  |  ಅಸಕ್ತೋ  ಹ್ಯಾಚರನ್ಕರ್ಮ  ಪರಮಾಪ್ನೋತಿ  ಪೂರುಷಃ  ||</p>
+          <span class="shloka-english">Tasmād asaktaḥ satataṁ kāryaṁ karma samācara | asakto hyācaran karma param āpnoti pūruṣaḥ ||</span>
+          <div class="meaning-block">
+            <strong>Meaning:</strong> Therefore, without attachment, always perform your required duties efficiently. By executing your work with complete detachment from the results, a human being inevitably attains the Supreme Destination.
+          </div>
+        `,
+        practice: "<strong>Practical Office Application:</strong> When designing software or writing business emails today, stop every 2 hours. Mentally declare: 'Krishna, this task is my assigned duty. I perform it to my highest ability. I drop the fear of appraisal or failure; the outcome belongs to You.'",
+        tags: ["Gita", "Karma Yoga", "Workplace"]
+      },
+      {
+        id: "cosmic-num-001",
+        category: "Numerology & Stars",
+        title: "The Geometry of the 27 Nakshatras",
+        timeline: "Vedanga Jyotisha",
+        summary: "How the macrocosm maps cleanly into the space of a single human breath.",
+        detailed: "<p>The zodiac is divided into 27 constellations (Nakshatras). Each Nakshatra spans 4 Padas (quarters), totaling 108 quarters. A conscious human breathes approximately 21,600 times a day. Dividing this by day and night cycles, you breathe exactly 108 times per subtle energetic sub-channel of the cosmic grid. Tuning your alignment via 108 repetitions of a mantra stabilizes your internal biological clock.</p>",
+        practice: "Never view 108 as a magical superstition; see it as absolute astronomical mathematics designed by ancient rishis to link your physical lungs to the stellar system.",
+        tags: ["Numerology", "Astronomy", "Nakshatra"]
+      },
+      {
+        id: "cosmic-week-001",
+        category: "7 Days Vedic Routine",
+        title: "The Complete Seven-Day Planetary Altar Structure",
+        timeline: "Weekly Nitya Karma Guide",
+        summary: "The definitive guide to foods, colors, and mantras for the weekly cycle.",
+        detailed: `
+          <div class="weekday-box" style="background:#FFF5F5;">
+            <strong>☀️ SUNDAY (ಭಾನುವಾರ - Ravivar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ ಘೃಣಿಃ ಸೂರ್ಯ ಆದಿತ್ಯಃ ಮಾಮ್ ಪಾಲಯ ||<br>
+            • <b>English:</b> Om Ghṛṇiḥ Sūrya Ādityaḥ Mām Pālaya ||<br>
+            • <b>Food offering:</b> Godhi Payasa (Broken wheat pudding with jaggery).<br>
+            • <b>Color & Number:</b> Copper Orange | Number 1.
+          </div>
+          <div class="weekday-box" style="background:#F8F9FA;">
+            <strong>🌙 MONDAY (ಸೋಮವಾರ - Somavar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ ನಮಃ ಶಿವಾಯ ||<br>
+            • <b>English:</b> Om Namaḥ Śivāya ||<br>
+            • <b>Food offering:</b> Akki Anna Kheer (White rice milk kheer).<br>
+            • <b>Color & Number:</b> Pristine Milky White | Number 2.
+          </div>
+          <div class="weekday-box" style="background:#FFF8F1;">
+            <strong>🔥 TUESDAY (ಮಂಗಳವಾರ - Mangalvar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ ಹನುಮತೇ ನಮಃ ||<br>
+            • <b>English:</b> Om Hanumate Namaḥ ||<br>
+            • <b>Food offering:</b> Togari Bele Thove (Yellow split pigeon peas with cow ghee).<br>
+            • <b>Color & Number:</b> Coral Red | Number 9.
+          </div>
+          <div class="weekday-box" style="background:#EBFDF2;">
+            <strong>🌱 WEDNESDAY (ಬುಧವಾರ - Budhavar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ ನಮೋ นಾರಾಯಣಾಯ ||<br>
+            • <b>English:</b> Om Namo Nārāyaṇāya ||<br>
+            • <b>Food offering:</b> Hesaru Bele Huggi (Green moong dal pongal).<br>
+            • <b>Color & Number:</b> Soft Emerald Green | Number 5.
+          </div>
+          <div class="weekday-box" style="background:#FFFDEB;">
+            <strong>🔱 THURSDAY (ಗುರುವಾರ - Guruvar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ ಗ್ರಾಂ ಗ್ರೀಂ ಗ್ರೌಂ ಸಃ ಗುರವೇ ನಮಃ ||<br>
+            • <b>English:</b> Om Grāṁ Grīṁ Grauṁ Saḥ Gurave Namaḥ ||<br>
+            • <b>Food offering:</b> Kadale Bele Payasa (Bengal gram dal kheer with jaggery).<br>
+            • <b>Color & Number:</b> Saffron Turmeric Yellow | Number 3.
+          </div>
+          <div class="weekday-box" style="background:#F0FDFA;">
+            <strong>💎 FRIDAY (ಶುಕ್ರವಾರ - Shukravar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ ಶ್ರೀ ಮಹಾಲಕ್ಷ್ಮ್ಯೈ ನಮಃ ||<br>
+            • <b>English:</b> Om Śrī Mahālakṣmyai Namaḥ ||<br>
+            • <b>Food offering:</b> Sajjige / Rava Kesari (Ghee semolina sweet).<br>
+            • <b>Color & Number:</b> Radiant Diamond White | Number 6.
+          </div>
+          <div class="weekday-box" style="background:#FAF5FF;">
+            <strong>🪐 SATURDAY (ಶನಿವಾರ - Shanivar):</strong><br>
+            • <b>ಕನ್ನಡ ಮಂತ್ರ:</b> ಓಂ  ಪ್ರಾಂ  ಪ್ರೀಂ  ಪ್ರೌಂ  ಸಃ  ಶನೈಶ್ಚರಾಯ  ನಮಃ  ||<br>
+            • <b>English:</b> Om Prāṁ Prīṁ Prauṁ Saḥ Śanaiścarāya Namaḥ ||<br>
+            • <b>Food offering:</b> Ellu Chitranna (Sesame roasted rice).<br>
+            • <b>Color & Number:</b> Charcoal Indigo Black | Number 8.
+          </div>
+        `,
+        practice: "Align your internal food intake and shirt color with the day's planet to clear planetary friction naturally.",
+        tags: ["7Days", "Navagraha", "Remedy", "Diet"]
+      },
+      {
+        id: "bhakta-001",
+        category: "Worshiping His Bhaktas",
+        title: "Guru Sri Raghavendra Swamy (Rayaru)",
+        timeline: "1595 - 1671 CE",
+        summary: "The embodiment of profound humility, scholarship, and silent meditation.",
+        detailed: "<p>An unparalleled master of the Madhva Dvaita school who entered live Jeeva Samadhi at Mantralayam. Rayaru taught that the highest etiquette of a devotee is the complete eradication of egoistic pride. He claimed he was merely an instrument reflecting the light of Moola Rama (Vishnu).</p>",
+        practice: "<strong>The Etiquette of Rayaru to Adopt:</strong> Never speak highly of your own spiritual routines to others. Keep your practices completely silent and secret.",
+        tags: ["Mantralayam", "Rayaru", "Humility", "Etiquette"]
+      }
+    ];
+  </script>
+</body>
+</html>
